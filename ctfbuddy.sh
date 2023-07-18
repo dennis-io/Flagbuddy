@@ -32,38 +32,33 @@ else
     echo "virtualenv is installed, moving on..."
 fi
 
-# Check if the ctfbuddy directory exists
-if [ -d "ctfbuddy" ]; then
-    echo "ctfbuddy directory exists, pulling latest changes..."
-    cd ctfbuddy && git pull origin main
+# Check if the ctfbuddy folder exists
+if [ -d "ctfbuddy" ] ; then
+    echo "ctfbuddy exists, updating now..."
+    cd ctfbuddy
+    git checkout . && git pull
 else
-    echo "Cloning ctfbuddy repository..."
+    echo "ctfbuddy does not exist, cloning now..."
     git clone https://github.com/neutronsec/ctfbuddy.git
     cd ctfbuddy
 fi
 
-# Create a Python virtual environment
-python3 -m venv venv
+# Create and activate virtual environment
+python3 -m venv env
+source env/bin/activate
 
-# Activate the virtual environment
-source venv/bin/activate
+# Install requirements
+pip3 install -r requirements.txt
 
-# Install required Python libraries
-pip3 install python-nmap
+# Make the Python script executable
+chmod +x buddy.py
+
+# Create an alias
+echo "alias ctfbuddy='$(pwd)/buddy.py'" >> ~/.bashrc
+source ~/.bashrc
 
 # Deactivate the virtual environment
 deactivate
 
-# Add execution permission to the buddy.py script
-chmod +x buddy.py
-
-# Create a symbolic link to run the buddy.py from anywhere
-if [ -L "/usr/local/bin/ctfbuddy" ]; then
-    echo "Symbolic link already exists..."
-else
-    echo "Creating symbolic link..."
-    sudo ln -s "$(pwd)/buddy.py" /usr/local/bin/ctfbuddy
-fi
-
-# Print success message
-echo "Setup completed. You can now use 'ctfbuddy' to run the script."
+# Inform the user that they should restart their shell
+echo "Installation complete. Please restart your shell or run 'source ~/.bashrc'."
