@@ -73,7 +73,7 @@ def main():
                         port.find("service").get("version", "N/A")
                     )
                     if port.find("service").get("name") == "ssh":
-                        console.print(f"\\n💡 Suggested Hydra command for SSH on {target}:{port.get('portid')}:")
+                        console.print(f"\\n💡 Suggested Hydra command for SSH on {target}:{port.get('portid')}:", style="bold green")
                         console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {target} ssh", style="bold green")
 
         console.print(table)
@@ -83,8 +83,22 @@ def main():
             nmap_output = file.read()
         console.print(nmap_output)
         if "22/tcp open  ssh" in nmap_output:
-            console.print(f"\\n💡 Suggested Hydra command for SSH on {target}:22:")
+            console.print(f"💡 Suggested Hydra command for SSH on {target}:22:", style="bold green")
             console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s 22 -t 4 -vV {target} ssh", style="bold green")
+
+    # Prompt the user for further enumeration
+    while True:
+        further_enum_option = console.input("\\nWould you like to perform further enumeration on a specific port? Enter the port number or type 'exit' to quit: ")
+        if further_enum_option.lower() == 'exit':
+            break
+        elif further_enum_option == '22':
+            console.print(f"Running Hydra on {target}:22...")
+            hydra_command = f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s 22 -vV {target} ssh"
+            process = subprocess.Popen(hydra_command, shell=True)
+            process.communicate()  # Wait for the process to finish and get the stdout and stderr
+        else:
+            console.print(f"⛔ Invalid option. Please try again.", style="bold red")
 
 if __name__ == "__main__":
     main()
+
