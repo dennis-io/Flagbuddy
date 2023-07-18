@@ -1,78 +1,53 @@
-#!/usr/bin/env python3
-# buddy.py
-
-import os
-import subprocess
+from rich.console import Console
+from rich.table import Table
+from rich.progress import track
 import xml.etree.ElementTree as ET
-import socket
-import sys
+from subprocess import run, PIPE
+import requests
+import time
 
-def is_root():
-    return os.geteuid() == 0
-
-def perform_nmap_scan(target_ip):
-    # Generate a unique filename for the XML output
-    xml_output_file = f"nmap_{target_ip}_scan.xml"
-
-    # Run Nmap and suppress output
-    nmap_command = f"nmap -sC -sV -A -p- -oX {xml_output_file} {target_ip}"
-    try:
-        subprocess.check_output(nmap_command, shell=True, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        print("An error occurred while running the Nmap scan:")
-        print(e.output.decode())
-        sys.exit(1)
-
-    return xml_output_file
-
-def parse_nmap_output(xml_file):
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-
-    for host in root.findall('host'):
-        ip = host.find('address').get('addr')
-        print(f"\nHost: {ip}\nPort | Protocol | Service | Version")
-        print("-----------------------------------------")
-        for port in host.iter('port'):
-            protocol = port.get('protocol')
-            portid = port.get('portid')
-            service = port.find('service').get('name')
-            version = port.find('service').get('product')
-            print(f"{portid} | {protocol} | {service} | {version}")
-
-        print("\n")
-
-def suggest_hydra_commands(nmap_file):
-    tree = ET.parse(nmap_file)
-    root = tree.getroot()
-
-    for host in root.findall('host'):
-        ip = host.find('address').get('addr')
-        for port in host.iter('port'):
-            service = port.find('service').get('name')
-            if service == 'ssh':
-                print(f"Hydra command for SSH on {ip}:{port.get('portid')}:")
-                print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {ip} ssh")
+console = Console()
 
 def main():
-    if not is_root():
-        print("This script must be run with sudo privileges as Nmap often requires them for its scanning capabilities.")
-        sys.exit(1)
-        
-    target_ip = input("Enter target IP: ")
+    console.print("🚀 Welcome to CTF Buddy! Let's start the enumeration... 🕵️", style="bold blue")
 
-    try:
-        socket.inet_aton(target_ip)
-    except socket.error:
-        print("Invalid IP address.")
-        sys.exit(1)
+    target = console.input("Please enter the target IP: ")
 
-    xml_file = perform_nmap_scan(target_ip)
-    parse_nmap_output(xml_file)
-    suggest_hydra_commands(xml_file)
+    with console.status("[bold yellow]Running Nmap on the target... 🕐", spinner="aesthetic") as status:
+        command = ["nmap", "-sc", "-sv", "-A", "-p-", "-oX", "scan.xml", target]
+        run(command, stdout=PIPE, stderr=PIPE)
 
-    # Optional: remove the XML file after we're done
-    os.remove(xml_file)
+    tree = ET.parse("scan.xml")
+    root = tree.getroot()
 
-if __name__ == "__main__":
+    console.print("💡 Nmap Scan Summary 💡", style="bold magenta")
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("IP", style="dim", width=12)
+    table.add_column("Port", style="dim", width=12)
+    table.add_column("Service", style="dim")
+    table.add_column("Product", style="dim")
+    table.add_column("Version", style="dim")
+
+    for elem in root.iter('host'):
+        for item in elem.iter('port'):
+            service = item.find('service')
+            ip = item.get('addr')
+            port = item.get('portid')
+            service_name = service.get('name')
+            product = service.get('product')
+            version = service.get('version')
+            table.add_row(ip, port, service_name, product, version)
+
+    console.print(table)
+
+    console.print("🔐 SSH Brute Force Recommendations 🔐", style="bold magenta")
+
+    for elem in root.iter('host'):
+        for item in elem.iter('port'):
+            if item.find('service').get('name') == 'ssh':
+                console.print(f"Hydra command for SSH on {target}:{item.get('portid')}:", style="bold yellow")
+                console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {item.get('portid')} -t 4 -vV {target} ssh", style="bold green")
+
+if __name__ == '__main__':
     main()

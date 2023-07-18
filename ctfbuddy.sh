@@ -1,64 +1,25 @@
 #!/bin/bash
-
-# Check if Git is installed
-if ! command -v git >/dev/null 2>&1; then
-    echo "Git is not installed, installing now..."
-    sudo apt-get install git
+# Clone the project if it doesn't already exist
+if [ ! -d "ctfbuddy" ]; then
+  git clone https://github.com/neutronsec/ctfbuddy.git
+  echo "Cloned the CTFBuddy repository."
 else
-    echo "Git is installed, moving on..."
+  cd ctfbuddy
+  git reset --hard
+  git pull
+  echo "Updated the CTFBuddy repository."
+  cd ..
 fi
 
-# Check if Python3 is installed
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "Python3 is not installed, installing now..."
-    sudo apt-get install python3
-else
-    echo "Python3 is installed, moving on..."
-fi
+# Create a virtual environment and activate it
+python3 -m venv ctfbuddy/venv
+source ctfbuddy/venv/bin/activate
 
-# Check if pip is installed
-if ! command -v pip3 >/dev/null 2>&1; then
-    echo "pip3 is not installed, installing now..."
-    sudo apt-get install python3-pip
-else
-    echo "pip3 is installed, moving on..."
-fi
+# Install the Python dependencies
+pip install -r ctfbuddy/requirements.txt
 
-# Check if virtualenv is installed
-if ! command -v virtualenv >/dev/null 2>&1; then
-    echo "virtualenv is not installed, installing now..."
-    sudo pip3 install virtualenv
-else
-    echo "virtualenv is installed, moving on..."
-fi
+# Link the CTFBuddy script to /usr/local/bin for global usage
+ln -sf $(pwd)/ctfbuddy/buddy.py /usr/local/bin/ctfbuddy
+chmod +x /usr/local/bin/ctfbuddy
 
-# Check if the ctfbuddy folder exists
-if [ -d "ctfbuddy" ] ; then
-    echo "ctfbuddy exists, updating now..."
-    cd ctfbuddy
-    git checkout . && git pull
-else
-    echo "ctfbuddy does not exist, cloning now..."
-    git clone https://github.com/neutronsec/ctfbuddy.git
-    cd ctfbuddy
-fi
-
-# Create and activate virtual environment
-python3 -m venv env
-source env/bin/activate
-
-# Install requirements
-pip3 install -r requirements.txt
-
-# Make the Python script executable
-chmod +x buddy.py
-
-# Create an alias
-echo "alias ctfbuddy='$(pwd)/buddy.py'" >> ~/.bashrc
-source ~/.bashrc
-
-# Deactivate the virtual environment
-deactivate
-
-# Inform the user that they should restart their shell
-echo "Installation complete. Please restart your shell or run 'source ~/.bashrc'."
+echo "CTFBuddy has been installed! You can run it with the 'ctfbuddy' command."
