@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from rich.console import Console
 from rich.table import Table
 from rich.progress import track
