@@ -1,25 +1,37 @@
 #!/bin/bash
-# Clone the project if it doesn't already exist
+
+# Cloning the repo
 if [ ! -d "ctfbuddy" ]; then
-  git clone https://github.com/neutronsec/ctfbuddy.git
-  echo "Cloned the CTFBuddy repository."
+    git clone https://github.com/neutronsec/ctfbuddy
 else
-  cd ctfbuddy
-  git reset --hard
-  git pull
-  echo "Updated the CTFBuddy repository."
-  cd ..
+    cd ctfbuddy
+    git pull origin main
+    cd ..
 fi
 
-# Create a virtual environment and activate it
-python3 -m venv ctfbuddy/venv
-source ctfbuddy/venv/bin/activate
+cd ctfbuddy
 
-# Install the Python dependencies
-pip install -r ctfbuddy/requirements.txt
+# Checking if virtualenv is installed
+if ! command -v virtualenv &> /dev/null
+then
+    echo "Virtualenv not found, installing..."
+    apt-get install -y virtualenv
+fi
 
-# Link the CTFBuddy script to /usr/local/bin for global usage
-ln -sf $(pwd)/ctfbuddy/buddy.py /usr/local/bin/ctfbuddy
-chmod +x /usr/local/bin/ctfbuddy
+# Create and activate a virtual environment
+virtualenv venv
+source venv/bin/activate
 
-echo "CTFBuddy has been installed! You can run it with the 'ctfbuddy' command."
+# Install the required packages
+pip install -r requirements.txt
+
+# Making the script executable and placing it in /usr/local/bin
+chmod +x buddy.py
+cp buddy.py /usr/local/bin/ctfbuddy
+deactivate
+
+echo "Installation complete. You can run the script using the command 'ctfbuddy'."
+
+# Clean up
+cd ..
+rm -rf ctfbuddy

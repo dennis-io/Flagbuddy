@@ -1,62 +1,52 @@
 #!/usr/bin/env python3
+
+from xml.etree import ElementTree as ET
+from rich.console import Console
+from rich.table import Table
+from rich import box
+import subprocess
 import os
 import time
-import subprocess
-from rich.console import Console
-from xml.etree import ElementTree as ET
-from rich.table import Table
-
-# Create a console for rich output
-console = Console()
 
 def main():
-    console.print(" Welcome to CTF Buddy! Let's start the enumeration... ", style="bold blue")
-    target = input("Please enter the target IP: ")
-    console.print(f" Target set to {target}. Initiating port scan... ", style="bold green")
+    console = Console()
+    console.print("🚀 Welcome to CTF Buddy! Let's start the enumeration... 🕵", style="bold blue")
 
-    # Running Nmap command
-    nmap_cmd = f'sudo nmap -p- -T4 -sV -oX scan.xml {target}'
-    subprocess.run(nmap_cmd, shell=True)
-    
-    # Check for the existence of 'scan.xml' every 5 seconds, up to 5 minutes
-    for _ in range(60):
-        if os.path.isfile('scan.xml'):
-            break
-        time.sleep(5)
-    else:
-        console.print(" The Nmap command is taking too long. Please check your network connection and try again.", style="bold red")
-        return
-    
-    console.print(" Nmap scan finished. Parsing results...", style="bold green")
-    
-    # Parse XML file
-    try:
-        tree = ET.parse("scan.xml")
-        root = tree.getroot()
+    target = console.input("Please enter the target IP: ")
 
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Port")
-        table.add_column("Service")
-        table.add_column("Product")
+    console.print(f"🏁 Target set to {target}. Initiating port scan... 🔍", style="bold blue")
 
-        for i in root.iter('port'):
-            port = i.get('portid')
-            service = i.find('service').get('name')
-            product = i.find('service').get('product')
-            table.add_row(port, service, product)
+    # Run Nmap and parse the output
+    nmap_command = f"nmap -p- -sV -oX scan.xml {target}"
+    os.system(f"{nmap_command} > /dev/null 2>&1")
 
-        console.print(table)
+    while not os.path.exists('scan.xml'):
+        time.sleep(1)
 
-        # Hydra command
-        if service == "ssh":
-            console.print(" Detected SSH service. Suggesting Hydra command for brute-forcing:", style="bold yellow")
-            console.print(f'hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port} -t 4 -vV {target} ssh', style="bold cyan")
+    tree = ET.parse("scan.xml")
+    root = tree.getroot()
 
-    except ET.ParseError:
-        console.print(" There was an error while parsing the scan.xml file. Please try again.", style="bold red")
-        return
+    # Create a table to display the scan results
+    table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+    table.add_column("Port")
+    table.add_column("State")
+    table.add_column("Service")
+    table.add_column("Product")
 
-    console.print(" Enumeration finished. Happy Hacking! ", style="bold blue")
+    for host in root.findall("host"):
+        for ports in host.findall("ports"):
+            for port in ports.findall("port"):
+                table.add_row(
+                    port.get("portid"), 
+                    port.find("state").get("state"), 
+                    port.find("service").get("name"),
+                    port.find("service").get("product", "N/A")
+                )
+                if port.find("service").get("name") == "ssh":
+                    console.print(f"\n💡 Suggested Hydra command for SSH on {target}:{port.get('portid')}:")
+                    console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {target} ssh", style="bold green")
+
+    console.print(table)
 
 if __name__ == "__main__":
     main()
