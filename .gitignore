@@ -1,1 +1,4 @@
 venv/
+__pycache__/
+nmap_output.txt
+scan.xml
