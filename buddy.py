@@ -1,54 +1,62 @@
 #!/usr/bin/env python3
-from rich.console import Console
-from rich.table import Table
-from rich.progress import track
-import xml.etree.ElementTree as ET
-from subprocess import run, PIPE
-import requests
+import os
 import time
+import subprocess
+from rich.console import Console
+from xml.etree import ElementTree as ET
+from rich.table import Table
 
+# Create a console for rich output
 console = Console()
 
 def main():
-    console.print("🚀 Welcome to CTF Buddy! Let's start the enumeration... 🕵️", style="bold blue")
+    console.print(" Welcome to CTF Buddy! Let's start the enumeration... ", style="bold blue")
+    target = input("Please enter the target IP: ")
+    console.print(f" Target set to {target}. Initiating port scan... ", style="bold green")
 
-    target = console.input("Please enter the target IP: ")
+    # Running Nmap command
+    nmap_cmd = f'sudo nmap -p- -T4 -sV -oX scan.xml {target}'
+    subprocess.run(nmap_cmd, shell=True)
+    
+    # Check for the existence of 'scan.xml' every 5 seconds, up to 5 minutes
+    for _ in range(60):
+        if os.path.isfile('scan.xml'):
+            break
+        time.sleep(5)
+    else:
+        console.print(" The Nmap command is taking too long. Please check your network connection and try again.", style="bold red")
+        return
+    
+    console.print(" Nmap scan finished. Parsing results...", style="bold green")
+    
+    # Parse XML file
+    try:
+        tree = ET.parse("scan.xml")
+        root = tree.getroot()
 
-    with console.status("[bold yellow]Running Nmap on the target... 🕐", spinner="aesthetic") as status:
-        command = ["nmap", "-sc", "-sv", "-A", "-p-", "-oX", "scan.xml", target]
-        run(command, stdout=PIPE, stderr=PIPE)
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Port")
+        table.add_column("Service")
+        table.add_column("Product")
 
-    tree = ET.parse("scan.xml")
-    root = tree.getroot()
+        for i in root.iter('port'):
+            port = i.get('portid')
+            service = i.find('service').get('name')
+            product = i.find('service').get('product')
+            table.add_row(port, service, product)
 
-    console.print("💡 Nmap Scan Summary 💡", style="bold magenta")
+        console.print(table)
 
-    table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("IP", style="dim", width=12)
-    table.add_column("Port", style="dim", width=12)
-    table.add_column("Service", style="dim")
-    table.add_column("Product", style="dim")
-    table.add_column("Version", style="dim")
+        # Hydra command
+        if service == "ssh":
+            console.print(" Detected SSH service. Suggesting Hydra command for brute-forcing:", style="bold yellow")
+            console.print(f'hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port} -t 4 -vV {target} ssh', style="bold cyan")
 
-    for elem in root.iter('host'):
-        for item in elem.iter('port'):
-            service = item.find('service')
-            ip = item.get('addr')
-            port = item.get('portid')
-            service_name = service.get('name')
-            product = service.get('product')
-            version = service.get('version')
-            table.add_row(ip, port, service_name, product, version)
+    except ET.ParseError:
+        console.print(" There was an error while parsing the scan.xml file. Please try again.", style="bold red")
+        return
 
-    console.print(table)
+    console.print(" Enumeration finished. Happy Hacking! ", style="bold blue")
 
-    console.print("🔐 SSH Brute Force Recommendations 🔐", style="bold magenta")
-
-    for elem in root.iter('host'):
-        for item in elem.iter('port'):
-            if item.find('service').get('name') == 'ssh':
-                console.print(f"Hydra command for SSH on {target}:{item.get('portid')}:", style="bold yellow")
-                console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {item.get('portid')} -t 4 -vV {target} ssh", style="bold green")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
