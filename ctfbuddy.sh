@@ -1,37 +1,31 @@
 #!/bin/bash
 
-# Cloning the repo
-if [ ! -d "ctfbuddy" ]; then
-    git clone https://github.com/neutronsec/ctfbuddy
-else
-    cd ctfbuddy
-    git pull origin main
-    cd ..
+# Checking if directory exists
+if [ -d "ctfbuddy" ]; then
+    echo "💼 ctfbuddy directory already exists. Removing for fresh installation..."
+    rm -rf ctfbuddy
 fi
+
+echo "📥 Cloning the CTF Buddy repository..."
+git clone https://github.com/neutronsec/ctfbuddy.git
 
 cd ctfbuddy
 
-# Checking if virtualenv is installed
-if ! command -v virtualenv &> /dev/null
-then
-    echo "Virtualenv not found, installing..."
-    apt-get install -y virtualenv
-fi
-
-# Create and activate a virtual environment
-virtualenv venv
+echo "🐍 Creating a Python virtual environment..."
+python3 -m venv venv
 source venv/bin/activate
 
-# Install the required packages
+echo "📦 Installing required Python packages..."
 pip install -r requirements.txt
 
-# Making the script executable and placing it in /usr/local/bin
-chmod +x buddy.py
-cp buddy.py /usr/local/bin/ctfbuddy
-deactivate
+# Check if ctfbuddy already exists in /usr/local/bin
+if [ -f "/usr/local/bin/ctfbuddy" ]; then
+    echo "🔄 ctfbuddy file already exists in /usr/local/bin. Removing for fresh installation..."
+    rm /usr/local/bin/ctfbuddy
+fi
 
-echo "Installation complete. You can run the script using the command 'ctfbuddy'."
+echo "🔗 Creating a symlink to /usr/local/bin..."
+sudo ln -s "$(pwd)/buddy.py" /usr/local/bin/ctfbuddy
+sudo chmod +x /usr/local/bin/ctfbuddy
 
-# Clean up
-cd ..
-rm -rf ctfbuddy
+echo "🎉 Installation complete. You can run the script using the command 'ctfbuddy'."
