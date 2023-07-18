@@ -1,42 +1,78 @@
+#!/usr/bin/env python3
+# buddy.py
+
 import os
+import subprocess
 import xml.etree.ElementTree as ET
+import socket
+import sys
 
-def run_nmap_scan(target_ip):
-    nmap_command = f"nmap -sc -sv -A -p- -oX ./nmap_results.xml {target_ip}"
-    os.system(nmap_command)
+def is_root():
+    return os.geteuid() == 0
 
-def process_nmap_results():
-    tree = ET.parse('./nmap_results.xml')
+def perform_nmap_scan(target_ip):
+    # Generate a unique filename for the XML output
+    xml_output_file = f"nmap_{target_ip}_scan.xml"
+
+    # Run Nmap and suppress output
+    nmap_command = f"nmap -sC -sV -A -p- -oX {xml_output_file} {target_ip}"
+    try:
+        subprocess.check_output(nmap_command, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print("An error occurred while running the Nmap scan:")
+        print(e.output.decode())
+        sys.exit(1)
+
+    return xml_output_file
+
+def parse_nmap_output(xml_file):
+    tree = ET.parse(xml_file)
     root = tree.getroot()
 
     for host in root.findall('host'):
-        ip_address = host.find('address').get('addr')
-        ports = host.find('ports')
-        for port in ports.findall('port'):
+        ip = host.find('address').get('addr')
+        print(f"\nHost: {ip}\nPort | Protocol | Service | Version")
+        print("-----------------------------------------")
+        for port in host.iter('port'):
+            protocol = port.get('protocol')
+            portid = port.get('portid')
             service = port.find('service').get('name')
-            version = port.find('service').get('version')
-            port_id = port.get('portid')
-            print(f"Port: {port_id} | Service: {service} | Version: {version}")
+            version = port.find('service').get('product')
+            print(f"{portid} | {protocol} | {service} | {version}")
+
+        print("\n")
+
+def suggest_hydra_commands(nmap_file):
+    tree = ET.parse(nmap_file)
+    root = tree.getroot()
+
+    for host in root.findall('host'):
+        ip = host.find('address').get('addr')
+        for port in host.iter('port'):
+            service = port.find('service').get('name')
             if service == 'ssh':
-                handle_ssh(ip_address)
-
-def handle_ssh(ip_address):
-    print(f"SSH detected on {ip_address}.")
-    print("Running brute force attack using Hydra...")
-
-    user_wordlist = "/usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt"
-    pass_wordlist = "/usr/share/wordlists/rockyou.txt"
-
-    hydra_command = f"hydra -L {user_wordlist} -P {pass_wordlist} {ip_address} ssh"
-    print(f"Recommended command to run: {hydra_command}")
-    run = input("Do you want to run this command now? (yes/no) ")
-    if run.lower() == 'yes':
-        os.system(hydra_command)
+                print(f"Hydra command for SSH on {ip}:{port.get('portid')}:")
+                print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {ip} ssh")
 
 def main():
-    target_ip = input("Please enter the target IP address: ")
-    run_nmap_scan(target_ip)
-    process_nmap_results()
+    if not is_root():
+        print("This script must be run with sudo privileges as Nmap often requires them for its scanning capabilities.")
+        sys.exit(1)
+        
+    target_ip = input("Enter target IP: ")
+
+    try:
+        socket.inet_aton(target_ip)
+    except socket.error:
+        print("Invalid IP address.")
+        sys.exit(1)
+
+    xml_file = perform_nmap_scan(target_ip)
+    parse_nmap_output(xml_file)
+    suggest_hydra_commands(xml_file)
+
+    # Optional: remove the XML file after we're done
+    os.remove(xml_file)
 
 if __name__ == "__main__":
     main()
