@@ -19,9 +19,9 @@ echo "📦 Installing required Python packages..."
 pip install -r requirements.txt
 
 # Check if ctfbuddy already exists in /usr/local/bin
-if [ -f "/usr/local/bin/ctfbuddy" ]; then
+if [ -L "/usr/local/bin/ctfbuddy" ]; then
     echo "🔄 ctfbuddy file already exists in /usr/local/bin. Removing for fresh installation..."
-    rm /usr/local/bin/ctfbuddy
+    sudo rm /usr/local/bin/ctfbuddy
 fi
 
 echo "🔗 Creating a symlink to /usr/local/bin..."
