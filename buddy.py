@@ -70,6 +70,9 @@ def main():
                         port.find("service").get("product", "N/A"),
                         port.find("service").get("version", "N/A")
                     )
+                    if port.find("service").get("name") == "ssh":
+                        console.print(f"\n💡 Suggested Hydra command for SSH on {target}:{port.get('portid')}:")
+                        console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {target} ssh", style="bold green")
 
         console.print(table)
 
