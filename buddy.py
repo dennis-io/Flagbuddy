@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
+import os
+import time
+import subprocess
 from xml.etree import ElementTree as ET
 from rich.console import Console
 from rich.table import Table
 from rich import box
-import subprocess
-import os
-import time
 
 def main():
+    # Check if script is running as root
+    if os.geteuid() != 0:
+        exit("🚫 Script must be run as root. Use sudo. Exiting...")
+
     console = Console()
     console.print("🚀 Welcome to CTF Buddy! Let's start the enumeration... 🕵", style="bold blue")
 
