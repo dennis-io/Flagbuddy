@@ -1,33 +1,45 @@
 #!/bin/bash
-# ctfbuddy.sh
 
-# Move to the home directory
-cd ~
-
-# Clone the GitHub repository
-git clone https://github.com/neutronsec/ctfbuddy
-
-# Move into the cloned directory
-cd ctfbuddy
-
-# Check for Python 3 and pip3 installation
-if ! command -v python3 &> /dev/null
-then
-    echo "Python3 could not be found. Installing now..."
-    sudo apt-get install -y python3
+# Check if Git is installed
+if ! command -v git >/dev/null 2>&1; then
+    echo "Git is not installed, installing now..."
+    sudo apt-get install git
+else
+    echo "Git is installed, moving on..."
 fi
 
-if ! command -v pip3 &> /dev/null
-then
-    echo "pip3 could not be found. Installing now..."
-    sudo apt-get install -y python3-pip
+# Check if Python3 is installed
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "Python3 is not installed, installing now..."
+    sudo apt-get install python3
+else
+    echo "Python3 is installed, moving on..."
 fi
 
-# Check for venv module in Python3
-python3 -c "help('modules venv')" > /dev/null
-if [ $? -ne 0 ]; then
-    echo "Python3 venv module not found. Installing python3-venv now..."
-    sudo apt-get install -y python3-venv
+# Check if pip is installed
+if ! command -v pip3 >/dev/null 2>&1; then
+    echo "pip3 is not installed, installing now..."
+    sudo apt-get install python3-pip
+else
+    echo "pip3 is installed, moving on..."
+fi
+
+# Check if virtualenv is installed
+if ! command -v virtualenv >/dev/null 2>&1; then
+    echo "virtualenv is not installed, installing now..."
+    sudo pip3 install virtualenv
+else
+    echo "virtualenv is installed, moving on..."
+fi
+
+# Check if the ctfbuddy directory exists
+if [ -d "ctfbuddy" ]; then
+    echo "ctfbuddy directory exists, pulling latest changes..."
+    cd ctfbuddy && git pull origin main
+else
+    echo "Cloning ctfbuddy repository..."
+    git clone https://github.com/neutronsec/ctfbuddy.git
+    cd ctfbuddy
 fi
 
 # Create a Python virtual environment
@@ -39,19 +51,19 @@ source venv/bin/activate
 # Install required Python libraries
 pip3 install python-nmap
 
-# Make the script executable
-chmod +x buddy.py
-
-# Add an alias to .bashrc or .zshrc for the `ctfbuddy` command
-if [[ "$SHELL" == *"zsh"* ]]; then
-    echo "alias ctfbuddy='`pwd`/buddy.py'" >> ~/.zshrc
-    source ~/.zshrc
-else
-    echo "alias ctfbuddy='`pwd`/buddy.py'" >> ~/.bashrc
-    source ~/.bashrc
-fi
-
 # Deactivate the virtual environment
 deactivate
 
-echo "CTFBuddy is set up! You can now use it by typing 'ctfbuddy' in the terminal."
+# Add execution permission to the buddy.py script
+chmod +x buddy.py
+
+# Create a symbolic link to run the buddy.py from anywhere
+if [ -L "/usr/local/bin/ctfbuddy" ]; then
+    echo "Symbolic link already exists..."
+else
+    echo "Creating symbolic link..."
+    sudo ln -s "$(pwd)/buddy.py" /usr/local/bin/ctfbuddy
+fi
+
+# Print success message
+echo "Setup completed. You can now use 'ctfbuddy' to run the script."
