@@ -1,103 +1,44 @@
-#!/usr/bin/env python3
+import json
+import nmap
 
-from xml.etree import ElementTree as ET
-from rich.console import Console
-from rich.table import Table
-from rich import box
-import subprocess
-import os
-import time
-import getpass
-import ipaddress
+def run_nmap(ip):
+    nm = nmap.PortScanner()
+    nm.scan(ip, arguments='-sC -sV -p-')
+    open_ports = [int(port) for port in nm[ip]['tcp'].keys() if nm[ip]['tcp'][port]['state'] == 'open']
+    services = {int(port): nm[ip]['tcp'][port]['name'] for port in nm[ip]['tcp'].keys() if nm[ip]['tcp'][port]['state'] == 'open'}
+    versions = {int(port): nm[ip]['tcp'][port]['version'] for port in nm[ip]['tcp'].keys() if nm[ip]['tcp'][port]['state'] == 'open'}
+    return open_ports, services, versions
 
-def validate_ip(ip):
-    try:
-        ipaddress.IPv4Address(ip)
-        return True
-    except ipaddress.AddressValueError:
-        return False
+
+def load_advice(filename):
+    with open(filename) as f:
+        return json.load(f)
 
 def main():
-    # Check for root permissions
-    if getpass.getuser() != 'root':
-        print("⛔ Please run the script as root (sudo) for correct functionality.")
-        return
-
-    console = Console()
-    console.print("🚀 Welcome to CTF Buddy! Let's start the enumeration... 🕵️", style="bold blue")
-
-    while True:
-        target = console.input("Please enter the target IP: ")
-        if validate_ip(target):
-            break
-        console.print("⛔ Invalid IP address. Please try again.", style="bold red")
-
-    console.print(f"🏁 Target set to {target}. Initiating port scan... 🔍", style="bold blue")
-
-    # Run Nmap and parse the output
-    nmap_command = f"nmap -p- -sV -sC -A -T4 -oX scan.xml {target}"
-    nmap_output = subprocess.run(nmap_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    with open("nmap_output.txt", "w") as file:
-        file.write(nmap_output.stdout.decode())
-
-    while not os.path.exists('scan.xml'):
-        time.sleep(1)
-
-    tree = ET.parse("scan.xml")
-    root = tree.getroot()
-
-    # Ask the user how they would like to display the results
-    while True:
-        display_option = console.input("How would you like to display the results? Type '1' for a simplified table, or '2' for full nmap output: ")
-        if display_option in ['1', '2']:
-            break
-        console.print("⛔ Invalid option. Please try again.", style="bold red")
-
-    if display_option == '1':
-        # Create a table to display the scan results
-        table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
-        table.add_column("Port")
-        table.add_column("State")
-        table.add_column("Service")
-        table.add_column("Product")
-        table.add_column("Version")
-
-        for host in root.findall("host"):
-            for ports in host.findall("ports"):
-                for port in ports.findall("port"):
-                    table.add_row(
-                        port.get("portid"), 
-                        port.find("state").get("state"), 
-                        port.find("service").get("name"),
-                        port.find("service").get("product", "N/A"),
-                        port.find("service").get("version", "N/A")
-                    )
-                    if port.find("service").get("name") == "ssh":
-                        console.print(f"\\n💡 Suggested Hydra command for SSH on {target}:{port.get('portid')}:", style="bold green")
-                        console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s {port.get('portid')} -t 4 -vV {target} ssh", style="bold green")
-
-        console.print(table)
-
-    else:
-        with open('nmap_output.txt') as file:
-            nmap_output = file.read()
-        console.print(nmap_output)
-        if "22/tcp open  ssh" in nmap_output:
-            console.print(f"💡 Suggested Hydra command for SSH on {target}:22:", style="bold green")
-            console.print(f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s 22 -t 4 -vV {target} ssh", style="bold green")
-
-    # Prompt the user for further enumeration
-    while True:
-        further_enum_option = console.input("\\nWould you like to perform further enumeration on a specific port? Enter the port number or type 'exit' to quit: ")
-        if further_enum_option.lower() == 'exit':
-            break
-        elif further_enum_option == '22':
-            console.print(f"Running Hydra on {target}:22...")
-            hydra_command = f"hydra -l /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt -P /usr/share/wordlists/rockyou.txt -s 22 -vV {target} ssh"
-            process = subprocess.Popen(hydra_command, shell=True)
-            process.communicate()  # Wait for the process to finish and get the stdout and stderr
+    ip = input("Enter the target IP: ")
+    print(f"Running nmap scan on {ip}...")
+    open_ports, services, versions = run_nmap(ip)
+    print(f"Open ports: {open_ports}")
+    port_advice = load_advice('port_advice.json')
+    service_advice = load_advice('service_advice.json')
+    for port in open_ports:
+        service = services.get(port)
+        version = versions.get(port)
+        advice = service_advice.get(service) or port_advice.get(str(port))
+        if advice:
+            print(f"\nAdvice for port {port} ({service}):")
+            print(f"Tool: {advice['tool']}")
+            if isinstance(advice['command'], list):
+                print("Commands:")
+                for command in advice['command']:
+                    print(f"- {command.replace('<ip>', ip)}")
+            else:
+                print(f"Command: {advice['command'].replace('<ip>', ip)}")
+            print(f"Explanation: {advice['explanation']}")
         else:
-            console.print(f"⛔ Invalid option. Please try again.", style="bold red")
+            print(f"\nNo advice for port {port} ({service}).")
+        if version:
+            print(f"Version: {version}")
 
 if __name__ == "__main__":
     main()

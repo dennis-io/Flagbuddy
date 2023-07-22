@@ -1,3 +1,0 @@
-python-nmap==0.6.1
-rich==10.1.0
-

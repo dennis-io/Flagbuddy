@@ -1,0 +1,32 @@
+{
+    "http": {
+        "tool": "gobuster/nikto/wfuzz",
+        "command": ["gobuster dir -u http://<ip> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt", "nikto -h http://<ip>", "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>/FUZZ"],
+        "explanation": "Use gobuster to brute force directories on the web server, use nikto to scan for web server vulnerabilities, or use wfuzz for fuzzing HTTP applications."
+    },
+    "https": {
+        "tool": "sslscan/testssl.sh",
+        "command": ["sslscan <ip>", "testssl.sh <ip>"],
+        "explanation": "Check for SSL vulnerabilities or use testssl.sh for a more comprehensive SSL/TLS scan."
+    },
+    "ssh": {
+        "tool": "ssh/hydra",
+        "command": ["ssh user@<ip>", "hydra -l user -P passlist.txt ssh://<ip>"],
+        "explanation": "Attempt to connect via SSH or use hydra to perform a brute force attack."
+    },
+    "ftp": {
+        "tool": "ftp/ncftp",
+        "command": ["ftp <ip>", "ncftp <ip>"],
+        "explanation": "Attempt to connect via FTP or use ncftp for more advanced features."
+    },
+    "smtp": {
+        "tool": "smtp-user-enum/swaks",
+        "command": ["smtp-user-enum -M VRFY -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>", "swaks --to user@<ip>"],
+        "explanation": "Attempt to enumerate SMTP users or test mail delivery with swaks."
+    },
+    "dns": {
+        "tool": "dig/host",
+        "command": ["dig @<ip>", "host -l domain <ip>"],
+        "explanation": "Attempt to perform a DNS zone transfer or list hosts in a domain."
+    }
+}

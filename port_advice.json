@@ -1,0 +1,152 @@
+{
+    "21": {
+        "tool": "ftp/ncftp",
+        "command": ["ftp <ip>", "ncftp <ip>"],
+        "explanation": "Attempt to connect via FTP or use ncftp for more advanced features."
+    },
+    "22": {
+        "tool": "ssh/hydra",
+        "command": ["ssh user@<ip>", "hydra -l user -P passlist.txt ssh://<ip>"],
+        "explanation": "Attempt to connect via SSH or use hydra to perform a brute force attack."
+    },
+    "23": {
+        "tool": "telnet",
+        "command": "telnet <ip>",
+        "explanation": "Attempt to connect via Telnet."
+    },
+    "25": {
+        "tool": "smtp-user-enum/swaks",
+        "command": ["smtp-user-enum -M VRFY -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>", "swaks --to user@<ip>"],
+        "explanation": "Attempt to enumerate SMTP users or test mail delivery with swaks."
+    },
+    "53": {
+        "tool": "dig/host",
+        "command": ["dig @<ip>", "host -l domain <ip>"],
+        "explanation": "Attempt to perform a DNS zone transfer or list hosts in a domain."
+    },
+    "80": {
+        "tool": "gobuster/nikto/wfuzz",
+        "command": ["gobuster dir -u http://<ip> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt", "nikto -h http://<ip>", "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>/FUZZ"],
+        "explanation": "Use gobuster to brute force directories on the web server, use nikto to scan for web server vulnerabilities, or use wfuzz for fuzzing HTTP applications."
+    },
+    "110": {
+        "tool": "pop3-user-enum",
+        "command": "pop3-user-enum -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>",
+        "explanation": "Attempt to enumerate POP3 users."
+    },
+    "135": {
+        "tool": "rpcclient",
+        "command": "rpcclient -U '' <ip>",
+        "explanation": "Attempt to connect to the RPC server."
+    },
+    "139": {
+        "tool": "enum4linux/nbtscan",
+        "command": ["enum4linux -a <ip>", "nbtscan -r <ip>"],
+        "explanation": "Enumerate SMB shares or scan for NetBIOS name information."
+    },
+    "143": {
+        "tool": "imap-user-enum",
+        "command": "imap-user-enum -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>",
+        "explanation": "Attempt to enumerate IMAP users."
+    },
+    "389": {
+        "tool": "ldapsearch",
+        "command": "ldapsearch -x -h <ip> -s base namingcontexts",
+        "explanation": "Attempt to enumerate LDAP service."
+    },
+    "443": {
+        "tool": "sslscan/testssl.sh",
+        "command": ["sslscan <ip>", "testssl.sh <ip>"],
+        "explanation": "Check for SSL vulnerabilities or use testssl.sh for a more comprehensive SSL/TLS scan."
+    },
+    "445": {
+        "tool": "enum4linux/smbclient",
+        "command": ["enum4linux -a <ip>", "smbclient -L //<ip>"],
+        "explanation": "Enumerate SMB shares or list shares using smbclient."
+    },
+    "512": {
+        "tool": "rlogin",
+        "command": "rlogin <ip>",
+        "explanation": "Attempt to connect via rlogin."
+    },
+    "513": {
+        "tool": "rlogin",
+        "command": "rlogin <ip>",
+        "explanation": "Attempt to connect via rlogin."
+    },
+    "514": {
+        "tool": "telnet/rlogin",
+        "command": ["telnet <ip> 514", "rlogin <ip>"],
+        "explanation": "Attempt to connect via telnet or rlogin."
+    },
+    "873": {
+        "tool": "rsync",
+        "command": "rsync <ip>::",
+        "explanation": "List rsync modules."
+    },
+    "1433": {
+        "tool": "sqlcmd/sqlmap",
+        "command": ["sqlcmd -S <ip>", "sqlmap -m 'mssql://sa:password@<ip>/master'"],
+        "explanation": "Attempt to connect to the SQL Server or use sqlmap to perform a SQL injection attack."
+    },
+    "1521": {
+        "tool": "sqlplus/sqlmap",
+        "command": ["sqlplus sys/password@<ip>/as sysdba", "sqlmap -m 'oracle://sys:password@<ip>:1521/'"],
+        "explanation": "Attempt to connect to the Oracle database or use sqlmap to perform a SQL injection attack."
+    },
+    "2049": {
+        "tool": "showmount",
+        "command": "showmount -e <ip>",
+        "explanation": "List NFS exports."
+    },
+    "3306": {
+        "tool": "mysql/sqlmap",
+        "command": ["mysql -h <ip> -u root -p", "sqlmap -u jdbc:mysql://<ip>/dbname"],
+        "explanation": "Attempt to connect to the MySQL server or use sqlmap to perform a SQL injection attack."
+    },
+    "3389": {
+        "tool": "rdesktop/xfreerdp",
+        "command": ["rdesktop <ip>", "xfreerdp /v:<ip>"],
+        "explanation": "Attempt to connect via RDP using rdesktop or xfreerdp."
+    },
+    "5432": {
+        "tool": "psql/sqlmap",
+        "command": ["psql -h <ip> -U postgres", "sqlmap -u jdbc:postgresql://<ip>/dbname"],
+        "explanation": "Attempt to connect to the PostgreSQL server or use sqlmap to perform a SQL injection attack."
+    },
+    "5900": {
+        "tool": "vncviewer",
+        "command": "vncviewer <ip>",
+        "explanation": "Attempt to connect via VNC."
+    },
+    "5985": {
+        "tool": "evil-winrm",
+        "command": "evil-winrm -i <ip> -u username -p password",
+        "explanation": "Attempt to connect via WinRM."
+    },
+    "8000": {
+        "tool": "gobuster/nikto/wfuzz",
+        "command": ["gobuster dir -u http://<ip>:8000 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt", "nikto -h http://<ip>:8000", "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>:8000/FUZZ"],
+        "explanation": "Use gobuster to brute force directories on the web server, use nikto to scan for web server vulnerabilities, or use wfuzz for fuzzing HTTP applications."
+    },
+    "8080": {
+        "tool": "gobuster/nikto/wfuzz",
+        "command": ["gobuster dir -u http://<ip>:8080 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt", "nikto -h http://<ip>:8080", "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>:8080/FUZZ"],
+        "explanation": "Use gobuster to brute force directories on the web server, use nikto to scan for web server vulnerabilities, or use wfuzz for fuzzing HTTP applications."
+    },
+    "8443": {
+        "tool": "sslscan/testssl.sh",
+        "command": ["sslscan <ip>:8443", "testssl.sh <ip>:8443"],
+        "explanation": "Check for SSL vulnerabilities or use testssl.sh for a more comprehensive SSL/TLS scan."
+    },
+    "9200": {
+        "tool": "curl",
+        "command": "curl http://<ip>:9200/_cat/indices?v",
+        "explanation": "Check for Elasticsearch indices."
+    },
+    "27017": {
+        "tool": "mongo",
+        "command": "mongo <ip>/admin",
+        "explanation": "Attempt to connect to the MongoDB server."
+    }
+}
