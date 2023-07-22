@@ -1,6 +1,6 @@
 # 🚀 Flagbuddy 🕵️
 
-Flagbuddy is your companion for Capture The Flag (CTF) competitions!
+Flagbuddy is your companion for Capture The Flag's (CTF)!
 
 ---
 
