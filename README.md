@@ -1,12 +1,12 @@
-# 🚀 CTF Buddy 🕵️
+# 🚀 Flagbuddy 🕵️
 
-CTF Buddy is your companion for Capture The Flag (CTF) competitions!
+Flagbuddy is your companion for Capture The Flag (CTF) competitions!
 
 ---
 
 ## ⚠️ Disclaimer
 
-CTF Buddy is intended for use in legal and consensual scenarios, such as Capture The Flag competitions or pen testing environments. The developers are not responsible for any misuse or damage caused by this program.
+Flagbuddy is intended for use in legal and consensual scenarios, such as Capture The Flag competitions or pen testing environments. The developers are not responsible for any misuse or damage caused by this program.
 
 ---
 
