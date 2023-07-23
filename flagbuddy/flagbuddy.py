@@ -46,6 +46,7 @@ def main():
             break  # Exit the loop if the IP address is valid
         except ValueError:
             continue  # Just continue to the next iteration of the loop
+    ip = str(ip)  # Convert IP address back to string
     logging.info(f"Running nmap scan on {ip}...")
     print(f"Running nmap scan on {ip}...")
     open_ports, services, versions = run_nmap(ip)
@@ -80,4 +81,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
