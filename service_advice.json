@@ -1,32 +1,487 @@
 {
     "http": {
         "tool": "gobuster/nikto/wfuzz",
-        "command": ["gobuster dir -u http://<ip> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt", "nikto -h http://<ip>", "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>/FUZZ"],
+        "command": [
+            "gobuster dir -u http://<ip> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt",
+            "nikto -h http://<ip>",
+            "wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --hc 404 http://<ip>/FUZZ"
+        ],
         "explanation": "Use gobuster to brute force directories on the web server, use nikto to scan for web server vulnerabilities, or use wfuzz for fuzzing HTTP applications."
     },
     "https": {
         "tool": "sslscan/testssl.sh",
-        "command": ["sslscan <ip>", "testssl.sh <ip>"],
+        "command": [
+            "sslscan <ip>",
+            "testssl.sh <ip>"
+        ],
         "explanation": "Check for SSL vulnerabilities or use testssl.sh for a more comprehensive SSL/TLS scan."
     },
     "ssh": {
         "tool": "ssh/hydra",
-        "command": ["ssh user@<ip>", "hydra -l user -P passlist.txt ssh://<ip>"],
+        "command": [
+            "ssh user@<ip>",
+            "hydra -l user -P passlist.txt ssh://<ip>"
+        ],
         "explanation": "Attempt to connect via SSH or use hydra to perform a brute force attack."
     },
     "ftp": {
         "tool": "ftp/ncftp",
-        "command": ["ftp <ip>", "ncftp <ip>"],
+        "command": [
+            "ftp <ip>",
+            "ncftp <ip>"
+        ],
         "explanation": "Attempt to connect via FTP or use ncftp for more advanced features."
     },
     "smtp": {
         "tool": "smtp-user-enum/swaks",
-        "command": ["smtp-user-enum -M VRFY -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>", "swaks --to user@<ip>"],
+        "command": [
+            "smtp-user-enum -M VRFY -U /usr/share/wordlists/metasploit/unix_users.txt -t <ip>",
+            "swaks --to user@<ip>"
+        ],
         "explanation": "Attempt to enumerate SMTP users or test mail delivery with swaks."
     },
     "dns": {
-        "tool": "dig/host",
-        "command": ["dig @<ip>", "host -l domain <ip>"],
-        "explanation": "Attempt to perform a DNS zone transfer or list hosts in a domain."
+        "tool": "dig/nslookup",
+        "command": [
+            "dig @<ip> domain",
+            "nslookup domain <ip>"
+        ],
+        "explanation": "Use dig or nslookup to query DNS records."
+    },
+    "rdp": {
+        "tool": "rdesktop",
+        "command": [
+            "rdesktop <ip>"
+        ],
+        "explanation": "Use rdesktop to connect to the remote desktop."
+    },
+    "smb": {
+        "tool": "smbclient/nmap",
+        "command": [
+            "smbclient -L //<ip>/",
+            "nmap -p 445 --script=smb-enum-shares.nse,smb-enum-users.nse <ip>"
+        ],
+        "explanation": "Use smbclient to list SMB shares or nmap to enumerate SMB shares and users."
+    },
+    "nfs": {
+        "tool": "showmount/nmap",
+        "command": [
+            "showmount -e <ip>",
+            "nmap -p 111 --script=nfs-ls,nfs-statfs,nfs-showmount <ip>"
+        ],
+        "explanation": "Use showmount to list NFS shares or nmap to enumerate NFS shares and gather file system statistics."
+    },
+    "snmp": {
+        "tool": "snmpwalk",
+        "command": [
+            "snmpwalk -v2c -c public <ip>"
+        ],
+        "explanation": "Use snmpwalk to retrieve SNMP information."
+    },
+    "sql": {
+        "tool": "sqlmap",
+        "command": [
+            "sqlmap -u \"http://<ip>/path?param=value\""
+        ],
+        "explanation": "Use sqlmap to perform SQL injection attacks."
+    },
+    "ldap": {
+        "tool": "ldapsearch",
+        "command": [
+            "ldapsearch -x -H ldap://<ip> -b \"dc=example,dc=com\""
+        ],
+        "explanation": "Use ldapsearch to query LDAP directory."
+    },
+    "kerberos": {
+        "tool": "kerbrute",
+        "command": [
+            "kerbrute userenum --dc <ip> userlist.txt"
+        ],
+        "explanation": "Use kerbrute to enumerate users on a Kerberos-enabled domain."
+    },
+    "telnet": {
+        "tool": "telnet",
+        "command": [
+            "telnet <ip> <port>"
+        ],
+        "explanation": "Use telnet to connect to a telnet server."
+    },
+    "netbios": {
+        "tool": "nbtscan",
+        "command": [
+            "nbtscan <ip>"
+        ],
+        "explanation": "Use nbtscan to scan for open NETBIOS name servers on a local or remote TCP/IP network."
+    },
+    "imap": {
+        "tool": "nmap",
+        "command": [
+            "nmap -p 143,993 --script=imap-enum-users.nse <ip>"
+        ],
+        "explanation": "Use nmap to enumerate IMAP users."
+    },
+    "pop3": {
+        "tool": "nmap",
+        "command": [
+            "nmap -p 110,995 --script=pop3-capabilities.nse <ip>"
+        ],
+        "explanation": "Use nmap to retrieve a POP3 server's capabilities."
+    },
+    "rpc": {
+        "tool": "rpcinfo",
+        "command": [
+            "rpcinfo -p <ip>"
+        ],
+        "explanation": "Use rpcinfo to enumerate RPC services."
+    },
+    "scp": {
+        "tool": "scp",
+        "command": [
+            "scp user@<ip>:/path/to/file /local/path"
+        ],
+        "explanation": "Use scp to copy files between hosts on a network."
+    },
+    "php": {
+        "tool": "php",
+        "command": [
+            "php script.php"
+        ],
+        "explanation": "Use PHP to execute a PHP script."
+    },
+    "icmp": {
+        "tool": "ping",
+        "command": [
+            "ping <ip>"
+        ],
+        "explanation": "Use ping to send ICMP echo requests to a host."
+    },
+    "nodejs": {
+        "tool": "node",
+        "command": [
+            "node app.js"
+        ],
+        "explanation": "Use Node.js to execute a Node.js application."
+    },
+    "expressjs": {
+        "tool": "node",
+        "command": [
+            "node app.js"
+        ],
+        "explanation": "Use Node.js to execute an Express.js application."
+    },
+    "angular": {
+        "tool": "ng",
+        "command": [
+            "ng serve"
+        ],
+        "explanation": "Use Angular CLI to start an Angular application."
+    },
+    "react": {
+        "tool": "npm",
+        "command": [
+            "npm start"
+        ],
+        "explanation": "Use npm to start a React application."
+    },
+    "vuejs": {
+        "tool": "npm",
+        "command": [
+            "npm run serve"
+        ],
+        "explanation": "Use npm to start a Vue.js application."
+    },
+    "django": {
+        "tool": "python",
+        "command": [
+            "python manage.py runserver"
+        ],
+        "explanation": "Use Python to start a Django application."
+    },
+    "flask": {
+        "tool": "python",
+        "command": [
+            "python app.py"
+        ],
+        "explanation": "Use Python to start a Flask application."
+    },
+    "rails": {
+        "tool": "rails",
+        "command": [
+            "rails server"
+        ],
+        "explanation": "Use Rails to start a Rails application."
+    },
+    "jsp": {
+        "tool": "java",
+        "command": [
+            "java -jar app.jar"
+        ],
+        "explanation": "Use Java to execute a JSP application."
+    },
+    "servlets": {
+        "tool": "java",
+        "command": [
+            "java -jar app.jar"
+        ],
+        "explanation": "Use Java to execute a Servlets application."
+    },
+    "springboot": {
+        "tool": "java",
+        "command": [
+            "java -jar app.jar"
+        ],
+        "explanation": "Use Java to execute a Spring Boot application."
+    },
+    "laravel": {
+        "tool": "php",
+        "command": [
+            "php artisan serve"
+        ],
+        "explanation": "Use PHP to start a Laravel application."
+    },
+    "symfony": {
+        "tool": "php",
+        "command": [
+            "php bin/console server:run"
+        ],
+        "explanation": "Use PHP to start a Symfony application."
+    },
+    "codeigniter": {
+        "tool": "php",
+        "command": [
+            "php -S localhost:8080 -t public/"
+        ],
+        "explanation": "Use PHP to start a CodeIgniter application."
+    },
+    "aspnet": {
+        "tool": "dotnet",
+        "command": [
+            "dotnet run"
+        ],
+        "explanation": "Use .NET to start an ASP.NET application."
+    },
+    "mongodb": {
+        "tool": "mongo",
+        "command": [
+            "mongo --host <ip>"
+        ],
+        "explanation": "Use MongoDB shell to connect to a MongoDB database."
+    },
+    "sqlite": {
+        "tool": "sqlite3",
+        "command": [
+            "sqlite3 database.db"
+        ],
+        "explanation": "Use SQLite shell to interact with a SQLite database."
+    },
+    "oracledb": {
+        "tool": "sqlplus",
+        "command": [
+            "sqlplus user/password@<ip>"
+        ],
+        "explanation": "Use SQL*Plus to connect to an Oracle database."
+    },
+    "mariadb": {
+        "tool": "mysql",
+        "command": [
+            "mysql -h <ip> -u user -p"
+        ],
+        "explanation": "Use MySQL client to connect to a MariaDB database."
+    },
+    "rabbitmq": {
+        "tool": "rabbitmqctl",
+        "command": [
+            "rabbitmqctl list_queues"
+        ],
+        "explanation": "Use rabbitmqctl to manage a RabbitMQ server."
+    },
+    "kafka": {
+        "tool": "kafka-console-producer",
+        "command": [
+            "kafka-console-producer --broker-list <ip>:9092 --topic test"
+        ],
+        "explanation": "Use Kafka console producer to send messages to a Kafka server."
+    },
+    "ansible": {
+        "tool": "ansible",
+        "command": [
+            "ansible all -m ping"
+        ],
+        "explanation": "Use Ansible to ping all hosts in the inventory."
+    },
+    "chef": {
+        "tool": "knife",
+        "command": [
+            "knife node list"
+        ],
+        "explanation": "Use Chef's knife tool to list all nodes in the organization."
+    },
+    "puppet": {
+        "tool": "puppet",
+        "command": [
+            "puppet agent --test"
+        ],
+        "explanation": "Use Puppet agent to apply a configuration catalog."
+    },
+    "docker": {
+        "tool": "docker",
+        "command": [
+            "docker run -d -p 80:80 image"
+        ],
+        "explanation": "Use Docker to run a Docker container."
+    },
+    "kubernetes": {
+        "tool": "kubectl",
+        "command": [
+            "kubectl get pods"
+        ],
+        "explanation": "Use kubectl to get information about Kubernetes pods."
+    },
+    "git": {
+        "tool": "git",
+        "command": [
+            "git clone https://github.com/user/repo.git"
+        ],
+        "explanation": "Use Git to clone a repository."
+    },
+    "subversion": {
+        "tool": "svn",
+        "command": [
+            "svn checkout http://svn.example.com/repo"
+        ],
+        "explanation": "Use Subversion to checkout a repository."
+    },
+    "jenkins": {
+        "tool": "curl",
+        "command": [
+            "curl -X POST http://<ip>:8080/job/job_name/build"
+        ],
+        "explanation": "Use curl to trigger a Jenkins job."
+    },
+    "travisci": {
+        "tool": "travis",
+        "command": [
+            "travis encrypt MY_SECRET_ENV=super_secret --add env.global"
+        ],
+        "explanation": "Use Travis CI to encrypt an environment variable."
+    },
+    "circleci": {
+        "tool": "circleci",
+        "command": [
+            "circleci config validate"
+        ],
+        "explanation": "Use CircleCI to validate the configuration file."
+    },
+    "vmware": {
+        "tool": "vmrun",
+        "command": [
+            "vmrun -T ws start /path/to/vm.vmx"
+        ],
+        "explanation": "Use VMware's vmrun to start a virtual machine."
+    },
+    "hyperv": {
+        "tool": "Hyper-V Manager",
+        "command": [
+            "(GUI tool)"
+        ],
+        "explanation": "Use Hyper-V Manager to manage virtual machines on Hyper-V."
+    },
+    "xen": {
+        "tool": "xl",
+        "command": [
+            "xl create /path/to/config"
+        ],
+        "explanation": "Use Xen's xl tool to create a new domain."
+    },
+    "vnc": {
+        "tool": "vncviewer",
+        "command": [
+            "vncviewer <ip>:<display#>"
+        ],
+        "explanation": "Use VNC Viewer to connect to a VNC server."
+    },
+    "ntp": {
+        "tool": "ntpdate",
+        "command": [
+            "ntpdate <ip>"
+        ],
+        "explanation": "Use ntpdate to query an NTP server."
+    },
+    "dhcp": {
+        "tool": "dhclient",
+        "command": [
+            "dhclient <interface>"
+        ],
+        "explanation": "Use dhclient to obtain an IP address from a DHCP server."
+    },
+    "sip": {
+        "tool": "sip-tester",
+        "command": [
+            "sipsak -s sip:<user>@<ip>"
+        ],
+        "explanation": "Use sipsak to send a SIP OPTIONS request."
+    },
+    "tftp": {
+        "tool": "tftp",
+        "command": [
+            "tftp <ip>"
+        ],
+        "explanation": "Use TFTP to connect to a TFTP server."
+    },
+    "sqlserver": {
+        "tool": "sqlcmd",
+        "command": [
+            "sqlcmd -S <ip> -U sa"
+        ],
+        "explanation": "Use sqlcmd to connect to a SQL Server database."
+    },
+    "postgres": {
+        "tool": "psql",
+        "command": [
+            "psql -h <ip> -U postgres"
+        ],
+        "explanation": "Use psql to connect to a PostgreSQL database."
+    },
+    "mysql": {
+        "tool": "mysql",
+        "command": [
+            "mysql -h <ip> -u root -p"
+        ],
+        "explanation": "Use mysql to connect to a MySQL database."
+    },
+    "cassandra": {
+        "tool": "cqlsh",
+        "command": [
+            "cqlsh <ip>"
+        ],
+        "explanation": "Use cqlsh to connect to a Cassandra database."
+    },
+    "redis": {
+        "tool": "redis-cli",
+        "command": [
+            "redis-cli -h <ip>"
+        ],
+        "explanation": "Use redis-cli to connect to a Redis server."
+    },
+    "memcached": {
+        "tool": "telnet",
+        "command": [
+            "telnet <ip> 11211"
+        ],
+        "explanation": "Use telnet to connect to a Memcached server."
+    },
+    "elasticsearch": {
+        "tool": "curl",
+        "command": [
+            "curl http://<ip>:9200"
+        ],
+        "explanation": "Use curl to interact with an Elasticsearch server."
+    },
+    "solr": {
+        "tool": "curl",
+        "command": [
+            "curl http://<ip>:8983/solr/admin/cores?action=STATUS"
+        ],
+        "explanation": "Use curl to interact with a Solr server."
     }
 }
